@@ -1,0 +1,111 @@
+<app-loader [loading]="DS.loading" ></app-loader>
+
+<app-nav *ngIf="DS.getAgrupadas()?.length" [items]="DS.getAgrupadas()"></app-nav>
+<div class="container mt-2" *ngIf="!DS.loading">
+    <div class="bg-black w-100 h-100 text-white p-3 rounded text-center mb-4">
+        <h3 class="text-white">PANEL DE {{categoria | uppercase}}</h3> <button class="btn btn-primary" (click)="copyAll(noticiasCategoria)">GENERAR COPY COMPLETO</button>
+    </div>
+
+        <div *ngIf="noticiasCategoria?.length > 0">
+    <div
+      *ngFor="let item of noticiasCategoria; let i = index"
+      style="border-bottom: 3px solid; padding: 10px; margin-bottom: 20px"
+    >
+     
+      <div
+        class="d-flex justify-content-evenly align-items-center mb-3 gap-2 w-100 position-relative">
+        <div
+          class="timestamp text-center"
+          *ngIf="!item.copy"
+        >
+
+          <b>{{ item.sendDate }} - {{ item.sendTime }}</b>
+          <p>FECHA - HORA</p>
+          <b
+            >{{ item.media }} <span *ngIf="item.media"></span>-
+            {{ item.program }}
+          </b>
+          <p>
+            <span *ngIf="item.media">MEDIO - </span
+            ><span *ngIf="item.program">PROGRAMA</span>
+          </p>
+                            <div class="categorias mb-2">
+                    <span
+                      class="topic-badge position-relative text-nowrap m-2"
+                      style="cursor: pointer"
+                      (click)="quitarCategoria(item, categoria)"
+                    >
+                      {{ categoria }}
+                      <span
+                        role="button"
+                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                      >
+                        x <span class="visually-hidden">cerrar</span>
+                      </span>
+                    </span>
+                  </div>
+                </div>
+                
+                <div class=" text-center">
+                  
+                  <div class="form-floating mb-3 row">
+            <div
+              class="media align-items-center gap-2"
+              *ngIf="item.link.trim() != 'https://undefined'"
+            >
+              <audio
+                *ngIf="item.link.split('.').pop()?.trim() === 'mp3'"
+                controls
+              >
+                <source src="{{ item.link }}" type="audio/mpeg" />
+                Your browser does not support the audio element.
+              </audio>
+              <br /><br />
+            </div>
+          <div
+            class="border border-2 p-2 rounded bg-light text-dark d-flex align-items-end justify-content-around gap-3"
+          >
+            <div class="info row w-100 strong">
+              <div class="col-9" >     
+                  <span *ngIf="item.copy">-> *{{item.iaResume}}*</span>
+                  <input type="text" class="form-control " id="copy"  [(ngModel)]="item.iaResume" [disabled]="item.copy" *ngIf="!item.copy"><br />
+              -> {{ item.media }} / {{ item.program }} <br />
+              🔗 -> {{ item.link.trim().slice(0,20) }}
+              </div>
+                <div class="col-3 align-content-center" >
+                  <button class="btn btn-primary" (click)="guardar(i)" *ngIf="!item.copy">Guardar</button>
+                   <button class="btn btn-primary" (click)="editar(i)" *ngIf="item.copy">Editar</button>
+                 </div>
+                </div>
+              <br /><br />
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <h6 *ngIf="item.text && !item.copy" [innerHTML]="resaltarTexto(item.text, item)">
+        <b>{{ item.startTime }}</b
+        ><b>{{ item.endTime }}</b>
+      </h6>
+      <h6 *ngIf="!item.text && !item.copy">
+        <a href="{{ item.link.trim() }}" target="_blank">{{
+          resaltarTexto(item.link.trim(), item)
+        }}</a>
+      </h6>
+      <br />
+      <b *ngIf="item.resume == '' && !item.copy">RESUMEN: </b>
+      <span
+        *ngIf="item.resume && !item.copy"
+        [innerHTML]="resaltarTexto(item.resume, item)"
+      ></span>
+      <br /><br />
+    </div>
+  </div>
+</div>
+  <p
+    class="bg-info p-3 rounded position-fixed bottom-50 end-50 border border-black"
+    *ngIf="toast"
+  >
+    ENLACE COPIADO CORRECTAMENTE
+  </p>

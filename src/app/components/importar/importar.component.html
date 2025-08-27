@@ -1,0 +1,196 @@
+<app-nav *ngIf="dataService.getAgrupadas()?.length" [items]="dataService.getAgrupadas()"></app-nav>
+<div class="container mt-2">
+      <div class="bg-black w-100 h-100 text-white p-3 rounded text-center mb-4" *ngIf="newsItems.length != 0">
+        <h3 class="text-white">PANEL DE EDICIÓN</h3>
+    </div>
+  <div
+    class="row h-75 align-items-center bg-secondary text-white p-4 rounded mt-2" *ngIf="newsItems.length == 0"
+  >
+    <h3 class="mb-3">Seleccione archivo</h3>
+    <div class="col-auto">
+      <input
+        type="file"
+        class="form-control"
+        name="archivo"
+        id="archivo"
+        (change)="onFileSelected($event)"
+        accept=".txt"
+      />
+    </div>
+    <div class="col-auto">
+      <button
+        class="btn btn-primary"
+        routerLink="/controlmedios/estadisticas"
+      >
+        Estadísticas
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="newsItems.length > 0">
+    <div
+      *ngFor="let item of newsItems; let i = index"
+      style="border-bottom: 3px solid; padding: 10px; margin-bottom: 20px"
+    >
+      <div *ngIf="item.link.split('.').pop()?.trim() === 'pdf'" class="w-100">
+        <iframe
+          [src]="transform(item.link)"
+          frameborder="0"
+          width="100%"
+          height="600"
+        ></iframe>
+      </div>
+      <div
+        class="d-flex justify-content-between align-items-center mb-3 gap-2 w-100 position-relative"
+        *ngIf="item.link.split('.').pop()?.trim() != 'pdf'"
+      >
+        <div
+          class="timestamp text-center"
+          *ngIf="item.link.split('.').pop()?.trim() != 'pdf'"
+        >
+          <b>{{ item.sendDate }} - {{ item.sendTime }}</b>
+          <p>FECHA - HORA</p>
+          <b
+            >{{ item.media }} <span *ngIf="item.media"></span>-
+            {{ item.program }}
+          </b>
+          <p>
+            <span *ngIf="item.media">MEDIO - </span
+            ><span *ngIf="item.program">PROGRAMA</span>
+          </p>
+          <div class="btn-group me-3">
+            <div
+              class="btn-group"
+              ngbDropdown
+              role="group"
+              aria-label="Button group with nested dropdown"
+            >
+              <button
+                type="button"
+                class="btn btn-outline-primary"
+                ngbDropdownToggle
+              >
+                Categorias
+              </button>
+              <div class="dropdown-menu" ngbDropdownMenu>
+                <button
+                  ngbDropdownItem
+                  *ngFor="let cat of categorias"
+                  (click)="agregarCategoria(cat, i)"
+                  [disabled]="item.topic.includes(cat)"
+                >
+                  {{ cat }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="centro">
+          <div
+            class="media align-items-center gap-2"
+            *ngIf="item.link.trim() != 'https://undefined'"
+          >
+            <audio
+              *ngIf="item.link.split('.').pop()?.trim() === 'mp3'"
+              controls
+            >
+              <source src="{{ item.link }}" type="audio/mpeg" />
+              Your browser does not support the audio element.
+            </audio>
+            <br /><br />
+          </div>
+          <div class="categorias">
+            ️🏷️ CATEGORIAS <br /><br />
+            <span
+              class="topic-badge position-relative text-nowrap m-2"
+              *ngFor="let topic of item.topic"
+              style="cursor: pointer"
+              (click)="quitarCategoria(topic, i)"
+            >
+              {{ topic }}
+              <span
+                role="button"
+                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+              >
+                x <span class="visually-hidden">cerrar</span>
+              </span>
+            </span>
+          </div>
+        </div>
+
+        <div
+          class="border border-2 p-2 rounded bg-light text-dark d-flex align-items-end justify-content-around gap-3"
+        >
+          <div class="info">
+            -> <br />
+            -> {{ item.media }} / {{ item.program }} <br />
+            🔗 ->{{ item.link.trim().slice(0, 10) + "..." }}
+          </div>
+          <div class="boton">
+            <a
+              class="btn btn-primary"
+              (click)="copy(item)"
+              target="_blank"
+              *ngIf="item.link.split('.').pop()?.trim() != 'pdf'"
+              >Copiar Info</a
+            >
+            <br /><br />
+          </div>
+        </div>
+        <div>
+          <i
+            role="button"
+            class="bi-star{{
+              item.destacada ? '-fill' : ''
+            }} fs-2 position-absolute top-50 end-0"
+            (click)="agregarCategoria('Destacadas', i)"
+            [class.destacada]="item.destacada"
+          ></i>
+        </div>
+      </div>
+      <!-- /***** IA RESUMEN *****/ -->
+      <!-- <div class="border border-2 p-5 rounded bg-light text-dark m-3 ">
+             <div class="loader position-relative d-flex flex-column align-items-center"
+              *ngIf="!item.iaResume"
+            >
+              <img
+                src="https://cordoba.gob.ar/wp-content/uploads/2023/12/cropped-Logo-Color_Mesa-de-trabajo-1.png"
+                alt=""
+                width="80px"
+                srcset=""
+              /><br>
+              <h6>GENERANDO RESUMEN...</h6>
+            </div>
+          <h5>{{item.iaResume}}</h5>
+          <button class="btn btn-primary float-end" (click)="mejorarResumen(item)">🔃 Mejorar Resumen</button>
+        </div> -->
+
+      <h6 *ngIf="item.text" [innerHTML]="resaltarTexto(item.text, i)">
+        <b>{{ item.startTime }}</b
+        ><b>{{ item.endTime }}</b>
+      </h6>
+      <h6 *ngIf="!item.text">
+        <a href="{{ item.link.trim() }}" target="_blank">{{
+          resaltarTexto(item.link.trim(), i)
+        }}</a>
+      </h6>
+      <br />
+      <b *ngIf="item.resume == ''">RESUMEN: </b>
+      <span
+        *ngIf="item.resume"
+        [innerHTML]="resaltarTexto(item.resume, i)"
+      ></span>
+      <br /><br />
+
+    </div>
+  </div>
+  <hr />
+
+  <p
+    class="bg-info p-3 rounded position-fixed bottom-50 end-50 border border-black"
+    *ngIf="toast"
+  >
+    ENLACE COPIADO CORRECTAMENTE
+  </p>
+</div>

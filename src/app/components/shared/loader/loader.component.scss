@@ -1,0 +1,35 @@
+.loader{
+    margin-top: 50px;
+    margin-bottom: 50px;
+}
+.loader img{
+    position: relative;
+    width:90px !important;
+	left:95px !important;
+	aspect-ratio: 1/1;
+}
+.spinner {
+    width: 6em;
+    height: 6em;
+    cursor: not-allowed;
+    border-radius: 50%;
+    border: 2px solid #444;
+    box-shadow: -15px -15px 15px #004b81, 0px -15px 15px 0px #9c32e2, 15px -15px 15px #971b2f , 15px 0 15px #ff0b0b, 15px 15px 15px 0px#ff5500, 0 15px 15px 0px #e1a113, -15px 15px 15px 0px #ffb700;
+    animation: rot55 3s linear infinite;
+  }
+  
+  .spinnerin {
+    width: 1.5em;
+    height: 1.5em;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) ;
+  }
+  
+  @keyframes rot55 {
+    to {
+      transform: rotate(360deg);
+    }
+  }

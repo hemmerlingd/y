@@ -1,0 +1,87 @@
+<app-loader [loading]="DS.loading" ></app-loader>
+<div class="container " *ngIf="!DS.loading">
+    <div class="row mt-3">
+        <h3>Mensiones por Medio</h3>
+        <div class="col-md-8"> 
+            <canvas baseChart
+                [data]="barMedios"
+                [options]="ChartOptions"
+                [type]="pieChartType" class="z-3">
+            </canvas>
+            </div>
+        <div class="col-md-4">
+            <table class="table table-striped table-hover" *ngIf="conteoMedios">
+                <thead>
+                    <tr>
+                    <th scope="col">Medio</th>
+                    <th scope="col">Cantidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of conteoMedios | slice:0:10 ; let i = index" scope="row">
+                    <td>{{ item.medio }}</td>
+                    <td class="text-center" >{{ item.cantidad }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+     
+   
+      <h3>Mensiones por Programa</h3>
+    <div class="row">
+        <div class="col-md-8">
+                <canvas baseChart
+            [data]="barProgramas"
+            [options]="ChartOptions"
+            [type]="pieChartType" class="z-3">
+        </canvas>
+        </div>    
+        <div class="col-md-4">
+            <table class="table table-striped table-hover" *ngIf="barProgramas">
+                <thead>
+                    <tr>
+                        <th scope="col">Programa</th>
+                        <th scope="col">Cantidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of barProgramas?.datasets[0].data | slice:0:10 ; let i = index" scope="row">
+                        <td>{{ barProgramas?.labels[i] }}</td>
+                        <td class="text-center" >{{ item }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+
+    <div class="row" *ngIf="this.noticiasCategoria.length == 0">
+        <h3>Mensiones por Tema</h3>
+        <div class="col-md-8">
+                <canvas baseChart
+            [data]="barTopics"
+            [options]="ChartOptions"
+            [type]="barChartType" class="z-3">
+        </canvas>
+        </div>    
+        <div class="col-md-4">
+            <table class="table table-striped table-hover" *ngIf="barTopics">
+                <thead>
+                    <tr>
+                        <th scope="col">Programa</th>
+                        <th scope="col">Cantidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of barTopics?.datasets[0].data | slice:0:10 ; let i = index" scope="row">
+                        <td>{{ barTopics?.labels[i] }}</td>
+                        <td class="text-center" >{{ item }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
