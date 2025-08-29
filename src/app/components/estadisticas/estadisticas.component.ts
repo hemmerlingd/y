@@ -1,17 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { ChartOptions, ChartType } from 'chart.js';
+import { Subscription } from 'rxjs';
 import { SharedService } from 'src/app/services/shared.service';
 import { DataService } from 'src/app/shared/data.service';
-
 
 @Component({
   selector: 'app-estadisticas',
   templateUrl: './estadisticas.component.html',
   styleUrls: ['./estadisticas.component.scss']
 })
-export class EstadisticasComponent {
-datos:any;
+export class EstadisticasComponent implements OnInit, OnDestroy {
+  datos: any;
   conteoMedios:{ medio: string; cantidad: number; }[]=[];
   conteoProgramas:{ programa: string; cantidad: number; }[]=[];
   conteoTopics:{ topic: string; cantidad: number; }[]=[];
@@ -28,83 +28,116 @@ datos:any;
   barProgramas;
   barTopics;
   noticiasCategoria=[];
+  noticiasMedio=[];
+  estadisticasList;
+  categoria:string='TOTALES';
+  medio:string='TODOS';
 
+  private subscriptions = new Subscription();
 
+  constructor(public DS: DataService, private sharedService:SharedService,  private activatedRoute: ActivatedRoute) {}
+
+  ngOnInit() {
+    this.DS.setLoading();
+    const newsSub = this.sharedService.leerNoticias().subscribe({
+      next: (ns) => {
+        this.DS.setSaved(ns);
+        this.datos = ns;
+        // Subscribe to route parameter changes here, after data is loaded
+        const paramsSub = this.activatedRoute.paramMap.subscribe((params: ParamMap) => {
+          this.categoria = params.get('cat') || 'TOTALES';
+          this.medio = params.get('medio') || 'TODOS';
+          if(this.activatedRoute.snapshot.url[1]?.path == 'm'){
+            this.procesarEstadisticas(this.medio,'medio'); 
+          }else{
+            this.procesarEstadisticas(this.categoria, 'categoria');
+          }
+          
+        });
+        this.subscriptions.add(paramsSub); // Add to subscriptions for cleanup
+        this.DS.setLoaded();
+      },
+      error: (error) => {
+        console.error("Error al leer noticias:", error);
+        this.DS.setLoaded();
+      }
+    });
+    this.subscriptions.add(newsSub);
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe(); // Clean up subscriptions to prevent memory leaks
+  }
+
+  procesarEstadisticas(categoria: string | null, tipo: string) {
+    // Reset arrays to ensure clean state on each navigation
+    this.noticiasCategoria = [];
+    let medios: { [clave: string]: number } = {};
+    let programas: { [clave: string]: number } = {};
+    let agrupadores: { [clave: string]: number } = {};
+
+    let datosAProcesar = this.datos;
+
+    if(tipo == 'categoria'){
+
+      // If a category is present, filter the data
+      if (categoria && this.datos && categoria !== 'TOTALES') {
+        this.noticiasCategoria = this.datos.filter((n) => n.acf.topic.includes(categoria));
+        datosAProcesar = this.noticiasCategoria;
+      }
   
-constructor(public DS: DataService, private sharedService:SharedService,  private activatedRoute: ActivatedRoute,) {
-   
-}
-
-async ngOnInit() {
-  this.DS.setLoading();
- this.sharedService.leerNoticias().subscribe((ns)=>{
-   this.DS.setSaved(ns);
-   this.datos = ns;
-   this.estadisticaMedios();
-  this.DS.setLoaded();
- },
- (error) => {
-   console.error("Error al leer noticias:", error);
-   // Aquí podrías mostrar un mensaje de error al usuario
- });
-
+      if (!datosAProcesar) {
+        return; // No data to process
+      }
   
-}
-
-estadisticaMedios(){
-let medios: { [clave: string]: number } = {};
-let programas: { [clave: string]: number } = {};
-let agrupadores: { [clave: string]: number } = {};
-
-
-this.activatedRoute.paramMap.subscribe((params: ParamMap) => {
-      let categoria = params.get('cat');    
-      this.datos?.filter((n) => {
-        if (n.acf.topic.includes(categoria)) {
-          this.noticiasCategoria.push(n);
+      // Perform counts
+      datosAProcesar.forEach(e => {
+        if (e.acf.media)   medios[e.acf.media] = (medios[e.acf.media] || 0) + 1;
+        if (e.acf.program) programas[e.acf.program] = (programas[e.acf.program] || 0) + 1;
+        if (e.acf.topic) {
+          e.acf.topic.forEach(t => {
+            agrupadores[t] = (agrupadores[t] || 0) + 1;
+          });
         }
       });
-    });
+    }else{
+      if (this.medio && this.datos && this.medio  !== 'TODOS') {
+        this.noticiasMedio = this.datos.filter((n) => n.acf.media.includes(this.medio));
+        datosAProcesar = this.noticiasMedio;
+      }
+  
+      if (!datosAProcesar) {
+        return; // No data to process
+      }
+      datosAProcesar.forEach(e => {
+        if (e.acf.media)   medios[e.acf.media] = (medios[e.acf.media] || 0) + 1;
+        if (e.acf.program) programas[e.acf.program] = (programas[e.acf.program] || 0) + 1;
+        if (e.acf.topic) {
+          e.acf.topic.forEach(t => {
+            agrupadores[t] = (agrupadores[t] || 0) + 1;
+          });
+        }
+      });
+  
 
+    }
+          /******MEDIOS*******/
+      this.conteoMedios = Object.entries(medios).map(([medio, cantidad]) => ({ medio, cantidad }))
+        .sort((a, b) => b.cantidad - a.cantidad);
+  
+      /******PROGRAMAS********/
+      this.conteoProgramas = Object.entries(programas).map(([programa, cantidad]) => ({ programa, cantidad }))
+        .sort((a, b) => b.cantidad - a.cantidad);
+  
+      /******TOPICS********/
+      this.conteoTopics = Object.entries(agrupadores).map(([topic, cantidad]) => ({ topic, cantidad }))
+        .sort((a, b) => b.cantidad - a.cantidad);
+  
+      // Update chart data
+      this.updateChartData();
+  }
 
-if(this.noticiasCategoria.length>0){
-  this.noticiasCategoria.forEach(e => {
-   medios[e.acf.media]= (medios[e.acf.media] || 0) + 1;
-   programas[e.acf.program]= (programas[e.acf.program] || 0) + 1;
-    
-   e.acf.topic.forEach(t => {
-     agrupadores[t]= (programas[e.acf.program] || 0) + 1;
-   });
-  });
-}else{
-  this.datos.forEach(e => {
-   medios[e.acf.media]= (medios[e.acf.media] || 0) + 1;
-   programas[e.acf.program]= (programas[e.acf.program] || 0) + 1;
-    
-   e.acf.topic.forEach(t => {
-     agrupadores[t]= (programas[e.acf.program] || 0) + 1;
-   });
-  });
-}
-
-/******MEDIOS*******/
-this.conteoMedios = Object.entries(medios).map(([medio, cantidad]) => ({
-  medio,
-  cantidad
-})).sort((a, b) => b.cantidad - a.cantidad);
-/******PROGRAMAS********/
-this.conteoProgramas = Object.entries(programas).map(([programa, cantidad]) => ({
-  programa,
-  cantidad
-})).sort((a, b) => b.cantidad - a.cantidad);
-/******TOPICS********/
-this.conteoTopics = Object.entries(agrupadores).map(([topic, cantidad]) => ({
-  topic,
-  cantidad
-})).sort((a, b) => b.cantidad - a.cantidad);
-
-
-
+  updateChartData() {
   this.barMedios = {
     labels: this.conteoMedios.map(item => item.medio),
     datasets: [
@@ -126,8 +159,6 @@ this.conteoTopics = Object.entries(agrupadores).map(([topic, cantidad]) => ({
       },
     ]
   };
-    
-
 
    this.barTopics = {
     labels: this.conteoTopics.map(item => item.topic),
@@ -135,12 +166,9 @@ this.conteoTopics = Object.entries(agrupadores).map(([topic, cantidad]) => ({
       {
         label: 'Cantidad',
         data: this.conteoTopics.map(item => item.cantidad),
-        backgroundColor:'#004b81'
+        backgroundColor: '#004b81'
       },
     ]
   };
 }
-
-
 }
-

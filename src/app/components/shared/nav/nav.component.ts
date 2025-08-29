@@ -11,6 +11,8 @@ import { DataService } from 'src/app/shared/data.service';
 export class NavComponent {
    categorias: string[] = [];
  @Input() items: Array<{padre: string; noticia:any[]}> =[];
+  @Input() estadisticas: Array<{padre: string; noticia:any[]}> =[];
+  @Input() medios: Array<{nombre: string}> =[];
   dataService = inject(DataService);
   
   constructor(private sharedService:SharedService){

@@ -1,19 +1,55 @@
-<nav class="navbar navbar-expand-lg">
-
-    <a class="navbar-brand" href="#" routerLink="/">
-        <img src="https://cordoba.gob.ar/wp-content/uploads/2023/12/cropped-Logo-Color_Mesa-de-trabajo-1.png" alt="logo" srcset="" width="80">
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav">
-        <li class="nav-item" *ngFor="let item of items">
-          <a class="nav-link position-relative border-1 border-success rounded text-center" routerLink="/controlmedios/" [state]="{ items: items }" routerLinkActive="active" aria-current="page" href="#" *ngIf="item.noticia.length>0 && item.padre == 'TODAS'">{{item.padre}} <span class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-success">{{item.noticia.length}}</span></a>
-          <a class="nav-link position-relative border-1 border-success rounded text-center" routerLink="/controlmedios/panel/{{item.padre}}" [state]="{ items: items }" routerLinkActive="active" aria-current="page" href="#" *ngIf="item.noticia.length>0 && item.padre != 'TODAS'">{{item.padre}} <span class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-success">{{item.noticia.length}}</span></a>
+<div class="bg-body-secondary">
+<div class="container">
+  <nav class="navbar navbar-expand-lg">
+      <a class="navbar-brand " href="#" routerLink="/">
+          <img src="https://cordoba.gob.ar/wp-content/uploads/2023/12/cropped-Logo-Color_Mesa-de-trabajo-1.png" alt="logo" srcset="" width="80">
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse " id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item" *ngFor="let item of items">
+            <a class="nav-link position-relative border-1 border-success rounded text-center" routerLink="/controlmedios/" [state]="{ items: items }" routerLinkActive="active" aria-current="page" href="#" *ngIf="item.noticia.length>0 && item.padre == 'TODAS'">{{item.padre}} <span class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-success">{{item.noticia.length}}</span></a>
+            <a class="nav-link position-relative border-1 border-success rounded text-center" routerLink="/controlmedios/panel/{{item.padre}}" [state]="{ items: items }" routerLinkActive="active" aria-current="page" href="#" *ngIf="item.noticia.length>0 && item.padre != 'TODAS'">{{item.padre}} <span class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-success">{{item.noticia.length}}</span></a>
+          </li>
+          <li class="nav-item dropdown"> <!-- Este es el elemento principal del menú "Estadísticas" -->
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Estadisticas
+          </a>
+          <ul class="dropdown-menu"> <!-- Este es el menú desplegable de "Estadísticas" -->
+            <li><a class="dropdown-item" href="#" routerLink="/controlmedios/estadisticas/"  routerLinkActive="active"  [routerLinkActiveOptions]="{ exact: true }">Totales</a></li>
+            <li *ngIf="estadisticas.length>0"><hr class="dropdown-divider"></li>
+            <li class="dropend"> <!-- 1. Usa 'dropend' para el contenedor del submenú -->
+              <a class="dropdown-item dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false" (click)="$event.stopPropagation()">
+                Categorias                
+              </a>
+              <ul class="dropdown-menu"> <!-- 3. Este es el submenú que se desplegará a la derecha -->
+                <app-loader [loading]="dataService.loading" ></app-loader>
+                <li *ngFor="let item of estadisticas">
+                  <a class="dropdown-item" routerLink="/controlmedios/estadisticas/c/{{item}}" [state]="{ estadisticas: estadisticas }" routerLinkActive="active" aria-current="page" href="#">{{item}}</a>
+                </li>
+                
+              </ul>
+            </li>
+            
+  <li class="dropend"> <!-- 1. Usa 'dropend' para el contenedor del submenú -->
+              <a class="dropdown-item dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false" (click)="$event.stopPropagation()">
+                Medios                
+              </a>
+              <ul class="dropdown-menu"> <!-- 3. Este es el submenú que se desplegará a la derecha -->
+                <li *ngFor="let item of medios">
+                  <app-loader [loading]="dataService.loading" ></app-loader>
+                  <a class="dropdown-item" routerLink="/controlmedios/estadisticas/m/{{item}}" [state]="{ medios: medios }" routerLinkActive="active" aria-current="page" href="#">{{item}}</a>
+                </li>
+                
+              </ul>
+            </li>
+          </ul>
         </li>
-       
-      </ul>
-    </div>
 
-</nav>
+        </ul>
+      </div>
+  </nav>
+</div>
+</div>

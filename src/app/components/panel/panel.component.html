@@ -1,6 +1,6 @@
 <app-loader [loading]="DS.loading" ></app-loader>
 
-<app-nav *ngIf="DS.getAgrupadas()?.length" [items]="DS.getAgrupadas()"></app-nav>
+<app-nav [items]="DS.getAgrupadas()"></app-nav>
 <div class="container mt-2" *ngIf="!DS.loading">
     <div class="bg-black w-100 h-100 text-white p-3 rounded text-center mb-4">
         <h3 class="text-white">PANEL DE {{categoria | uppercase}}</h3> <button class="btn btn-primary" (click)="copyAll(noticiasCategoria)">GENERAR COPY COMPLETO</button>
@@ -31,7 +31,7 @@
           </p>
                             <div class="categorias mb-2">
                     <span
-                      class="topic-badge position-relative text-nowrap m-2"
+                      class="topic-badge position-relative text-nowrap lh-lg m-2"
                       style="cursor: pointer"
                       (click)="quitarCategoria(item, categoria)"
                     >

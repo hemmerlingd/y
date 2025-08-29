@@ -1,0 +1,26 @@
+/* nav.component.scss o styles.scss */
+
+/*
+ * Activa los menús desplegables al pasar el ratón (hover)
+ * solo en pantallas grandes (escritorio).
+ * Mantiene el comportamiento de clic para móviles.
+ */
+@media (min-width: 992px) {
+
+  /* Muestra el menú principal al pasar el ratón */
+  .dropdown:hover > .dropdown-menu {
+    display: block;
+    margin-top: 0; /* Evita el pequeño salto */
+  }
+
+  /* Posiciona el submenú al costado */
+  .dropend:hover > .dropdown-menu {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 100%;
+    margin-left: -1px; /* Evita un pequeño espacio */
+    height: 300px !important;
+    overflow: scroll !important;
+  }
+}

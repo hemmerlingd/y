@@ -1,35 +1,32 @@
 <app-loader [loading]="DS.loading" ></app-loader>
+<app-nav *ngIf="!DS.loading" [items]="DS.getAgrupadas()" [medios]="DS.getmedios()" [estadisticas]="DS.getStats()"></app-nav>
 <div class="container " *ngIf="!DS.loading">
-    <div class="row mt-3">
-        <h3>Mensiones por Medio</h3>
+
+     <div class="bg-black w-100 h-100 text-white p-3 rounded text-center my-4">
+        <h3 class="text-white">ESTADISTICAS <span *ngIf="categoria != 'TOTALES'">DE</span> {{categoria | uppercase}} <span *ngIf="noticiasCategoria.length > 0" class="small">({{noticiasCategoria.length}} noticias)</span></h3>
+    </div>
+
+    <div class="row my-3" *ngIf="this.noticiasMedio.length == 0">
+        <h3>Menciones por Medio</h3>
         <div class="col-md-8"> 
             <canvas baseChart
                 [data]="barMedios"
                 [options]="ChartOptions"
                 [type]="pieChartType" class="z-3">
             </canvas>
+        </div>
+            <div class="col-md-4 mb-5 ">
+            <div class="d-flex align-content-center gap-3 flex-wrap h-100">
+                <button *ngFor="let item of conteoMedios | slice:0:15 ; let i = index" scope="row" role="button" type="button" class="btn btn-outline-dark position-relative" routerLink="/controlmedios/estadisticas/m/{{item.medio}}">
+                    {{ item.medio }} <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">{{ item.cantidad }}</span>
+                </button>
             </div>
-        <div class="col-md-4">
-            <table class="table table-striped table-hover" *ngIf="conteoMedios">
-                <thead>
-                    <tr>
-                    <th scope="col">Medio</th>
-                    <th scope="col">Cantidad</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let item of conteoMedios | slice:0:10 ; let i = index" scope="row">
-                    <td>{{ item.medio }}</td>
-                    <td class="text-center" >{{ item.cantidad }}</td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
     </div>
      
    
-      <h3>Mensiones por Programa</h3>
-    <div class="row">
+      <h3>Menciones por Programa</h3>
+    <div class="row my-5">
         <div class="col-md-8">
                 <canvas baseChart
             [data]="barProgramas"
@@ -37,28 +34,19 @@
             [type]="pieChartType" class="z-3">
         </canvas>
         </div>    
-        <div class="col-md-4">
-            <table class="table table-striped table-hover" *ngIf="barProgramas">
-                <thead>
-                    <tr>
-                        <th scope="col">Programa</th>
-                        <th scope="col">Cantidad</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let item of barProgramas?.datasets[0].data | slice:0:10 ; let i = index" scope="row">
-                        <td>{{ barProgramas?.labels[i] }}</td>
-                        <td class="text-center" >{{ item }}</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="col-md-4 ">
+            <div class="d-flex align-content-end gap-3 flex-wrap h-100">
+                <button *ngFor="let item of barProgramas?.datasets[0].data | slice:0:15 ; let i = index" scope="row" role="button" type="button" class="btn btn-outline-dark position-relative" routerLink="/controlmedios/estadisticas/m/{{barProgramas?.labels[i]}}" disabled>
+                    {{ barProgramas?.labels[i] }} <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">{{ item }}</span>
+                </button>
+            </div>
         </div>
     </div>
 
 
 
-    <div class="row" *ngIf="this.noticiasCategoria.length == 0">
-        <h3>Mensiones por Tema</h3>
+    <div class="row my-5" *ngIf="this.noticiasCategoria.length == 0">
+        <h3>Menciones por Tema</h3>
         <div class="col-md-8">
                 <canvas baseChart
             [data]="barTopics"
@@ -66,21 +54,12 @@
             [type]="barChartType" class="z-3">
         </canvas>
         </div>    
-        <div class="col-md-4">
-            <table class="table table-striped table-hover" *ngIf="barTopics">
-                <thead>
-                    <tr>
-                        <th scope="col">Programa</th>
-                        <th scope="col">Cantidad</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let item of barTopics?.datasets[0].data | slice:0:10 ; let i = index" scope="row">
-                        <td>{{ barTopics?.labels[i] }}</td>
-                        <td class="text-center" >{{ item }}</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="col-md-4 mb-5">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <button *ngFor="let item of barTopics?.datasets[0].data | slice:0:15 ; let i = index" scope="row" role="button" type="button" class="btn btn-outline-dark position-relative" routerLink="/controlmedios/estadisticas/m/{{barTopics?.labels[i]}}">
+                    {{ barTopics?.labels[i] }} <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">{{ item }}</span>
+                </button>
+            </div>
         </div>
     </div>
 </div>

@@ -27,7 +27,11 @@ const routes: Routes = [
         component: EstadisticasComponent,
       },
       {
-        path: 'estadisticas/:cat',
+        path: 'estadisticas/c/:cat',
+        component: EstadisticasComponent,
+      },
+            {
+        path: 'estadisticas/m/:medio',
         component: EstadisticasComponent,
       },
     ]

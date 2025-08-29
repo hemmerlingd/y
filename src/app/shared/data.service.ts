@@ -11,7 +11,10 @@ export class DataService{
   newsItems: [] = [];
   newAgrupadas: Array<{padre: string; noticia:any[]}> =[];
   noticiasGuardadas:[] =[];
-  loading: boolean = true;
+  loading: boolean = false;
+  estadisticasList:any[]=[];
+  mediosList:any[]=[];
+
 
    constructor(private sharedService:SharedService) { 
     
@@ -27,6 +30,20 @@ export class DataService{
   }
     getNews(): any {
     return this.newsItems;
+  }
+  
+  setStats(){
+    this.loading=true
+    const data = this.getSaved();
+    const allTopics = data.flatMap(item => item?.acf?.topic || []);
+    this.estadisticasList = [...new Set(allTopics)].sort((a:string, b:string) => a.localeCompare(b));
+   this.loading=false
+    return this.estadisticasList;
+  }
+
+    getStats(): any {
+      this.setStats();
+    return this.estadisticasList;
   }
     setSaved(data){
     this.noticiasGuardadas = data;
@@ -56,12 +73,25 @@ export class DataService{
  getPalabras(){
     return this.palabrasClaveOriginal;
   }
- setmedios(data){
-    this.mediosYProgramas = data;
+ setmedios(){
+this.loading =true
+      let list =[];
+    const data = this.getSaved();
+    
+    const allTopics = data.flatMap(item => item?.acf?.media || []);
+    this.mediosList = [...new Set(allTopics)].sort((a:string, b:string) => a.localeCompare(b));
+   this.loading =false
+    return this.mediosList;
   }
  getmedios(){
+  this.setmedios();
+    return this.mediosList;
+  }
+      setMediosXLS(data: any) {
+    this.mediosYProgramas = data;
+  }
+
+  getMediosXLS(): any {
     return this.mediosYProgramas;
   }
 }
-
-

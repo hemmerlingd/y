@@ -51,6 +51,8 @@ export class ImportarComponent {
   async ngOnInit() {
    this.sharedService.leerNoticias().subscribe((ns)=>{
      this.dataService.setSaved(ns);
+     
+    
    })
 
 
@@ -69,7 +71,9 @@ export class ImportarComponent {
           };
         });
       this.mediosYProgramas.splice(0, 1);
-      this.dataService.setmedios(this.mediosYProgramas)
+      this.dataService.setMediosXLS(this.mediosYProgramas)
+      console.log(this.dataService.getMediosXLS());
+      
      
       this.palabrasClaveOriginal = jsonData.table.rows.map((row: any) => {
         return {
@@ -105,6 +109,7 @@ export class ImportarComponent {
 
   // Maneja la selección de archivos
   onFileSelected(event: Event): void {
+    this.dataService.setLoading();
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) {
       this.errorMessage = 'No se seleccionó ningún archivo.';
@@ -127,10 +132,12 @@ export class ImportarComponent {
       this.errorMessage = 'Error al leer el archivo.';
     };
     reader.readAsText(file);
+    this.dataService.setLoaded();
   }
 
   // Parsea el contenido del archivo de texto
   private parseContent(content: string): void {
+    this.dataService.setLoading();
     this.newsItems = [];
     // Regex para dividir el archivo en mensajes individuales basados en la fecha y hora
     const messages = content.split(
@@ -171,7 +178,7 @@ export class ImportarComponent {
           'Los mensajes y las llamadas están cifrados de extremo a extremo'
         ) ||
         messageBody.includes('creó este grupo') ||
-        messageBody.includes('Hugo Tejeda te añadió.')
+        messageBody.includes('Hugo Tejeda te añadió.')  
       ) {
         continue;
       }
@@ -183,6 +190,8 @@ export class ImportarComponent {
       ) {
         continue;
       }
+      messageBody .replace('imagen omitida', '').trim();
+      messageBody = messageBody.replace('‼️', '').trim();
 
       // 6. Extraer Link
       const linkRegex = /(https?:\/\/[^\s]+)/;
@@ -260,7 +269,7 @@ export class ImportarComponent {
     this.dataService.setNews(this.newsItems);
     
     this.dataService.setAgrupadas(this.newAgrupadas);
-
+    this.dataService.setLoaded();
   }
 
 guardarJson(){
@@ -477,6 +486,7 @@ resaltarTexto(texto: string, i: any) {
 
 
 }
+
 
 
   copy(text: any) {
