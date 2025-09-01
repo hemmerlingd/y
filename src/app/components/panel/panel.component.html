@@ -21,9 +21,18 @@
 
           <b>{{ item.sendDate }} - {{ item.sendTime }}</b>
           <p>FECHA - HORA</p>
-          <b
-            >{{ item.media }} <span *ngIf="item.media"></span>-
-            {{ item.program }}
+          <b>
+            <b>
+            <span #mediaEl [contentEditable]="editingIndex === i" [textContent]="item.media" class="editable-field"></span> -
+            <span #programEl [contentEditable]="editingIndex === i" [textContent]="item.program" class="editable-field"></span>
+            
+            <i class="fa fa-edit text-primary" 
+               *ngIf="editingIndex !== i" 
+               (click)="editingIndex = i" style="cursor: pointer; margin-left: 8px;"></i>
+            <i class="fa fa-check text-success" 
+               *ngIf="editingIndex === i" 
+               (click)="item.media = mediaEl.innerText; item.program = programEl.innerText; editingIndex = null" style="cursor: pointer; margin-left: 8px; color: #28a745;"></i>
+          </b>
           </b>
           <p>
             <span *ngIf="item.media">MEDIO - </span

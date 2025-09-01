@@ -2,8 +2,43 @@
 <app-nav *ngIf="!DS.loading" [items]="DS.getAgrupadas()" [medios]="DS.getmedios()" [estadisticas]="DS.getStats()"></app-nav>
 <div class="container " *ngIf="!DS.loading">
 
+     <div
+    class="row h-75 justify-content-evenly align-items-end bg-secondary text-white p-4 rounded mt-2" 
+  >
+    <h3 class="mb-3">Seleccione Fechas</h3>
+    <div class="col-auto">
+            <h5>Desde</h5>
+            <div class="input-group">
+                <input class="form-control" placeholder="Seleccione Fecha" name="dpDesde" [(ngModel)]="desde" ngbDatepicker #dDesde="ngbDatepicker" (click)="dDesde.toggle()">
+                <button class="btn btn-outline-dark calendar" (click)="dDesde.toggle()" type="button">
+                    <i class="fa-solid fa-calendar"></i>
+                </button>
+            </div>
+    </div>
+    <div class="col-auto">
+            <h5>Hasta</h5>
+            <div class="input-group">
+                <input class="form-control" placeholder="Seleccione Fecha" name="dpHasta" [(ngModel)]="hasta" ngbDatepicker #dHasta="ngbDatepicker" (click)="dHasta.toggle()" >
+                <button class="btn btn-outline-dark calendar" (click)="dHasta.toggle()" type="button">
+                    <i class="fa-solid fa-calendar"></i>
+                </button>
+            </div>
+    </div>
+    <div class="col-auto">
+           <button class="btn btn-dark" (click)="Consultar()">Consultar</button>
+    </div>
+
+  </div>
+
      <div class="bg-black w-100 h-100 text-white p-3 rounded text-center my-4">
-        <h3 class="text-white">ESTADISTICAS <span *ngIf="categoria != 'TOTALES'">DE</span> {{categoria | uppercase}} <span *ngIf="noticiasCategoria.length > 0" class="small">({{noticiasCategoria.length}} noticias)</span></h3>
+        <h3 class="text-white">ESTADISTICAS 
+            <span *ngIf="noticiasCategoria.length == 0 && noticiasMedio.length == 0">TOTALES</span> 
+            <span *ngIf="noticiasCategoria.length > 0">DE {{categoria | uppercase}} </span>
+            <span *ngIf="noticiasMedio.length > 0">DE {{medio | uppercase}} </span>
+            (<span *ngIf="noticiasCategoria.length > 0">{{noticiasCategoria.length}}</span>  
+            <span *ngIf="noticiasMedio.length > 0">{{noticiasMedio.length}}</span>
+            <span *ngIf="noticiasCategoria.length == 0 && noticiasMedio.length == 0">{{datosAProcesar.length}}</span>  noticias)
+        </h3>
     </div>
 
     <div class="row my-3" *ngIf="this.noticiasMedio.length == 0">
@@ -35,7 +70,7 @@
         </canvas>
         </div>    
         <div class="col-md-4 ">
-            <div class="d-flex align-content-end gap-3 flex-wrap h-100">
+            <div class="d-flex align-content-center gap-3 flex-wrap h-100">
                 <button *ngFor="let item of barProgramas?.datasets[0].data | slice:0:15 ; let i = index" scope="row" role="button" type="button" class="btn btn-outline-dark position-relative" routerLink="/controlmedios/estadisticas/m/{{barProgramas?.labels[i]}}" disabled>
                     {{ barProgramas?.labels[i] }} <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">{{ item }}</span>
                 </button>
@@ -55,12 +90,25 @@
         </canvas>
         </div>    
         <div class="col-md-4 mb-5">
-            <div class="d-flex align-items-center gap-3 flex-wrap">
-                <button *ngFor="let item of barTopics?.datasets[0].data | slice:0:15 ; let i = index" scope="row" role="button" type="button" class="btn btn-outline-dark position-relative" routerLink="/controlmedios/estadisticas/m/{{barTopics?.labels[i]}}">
+            <div class="d-flex align-content-center gap-3 flex-wrap h-100">
+                <button *ngFor="let item of barTopics?.datasets[0].data | slice:0:15 ; let i = index" scope="row" role="button" type="button" class="btn btn-outline-dark position-relative" routerLink="/controlmedios/estadisticas/c/{{barTopics?.labels[i]}}">
                     {{ barTopics?.labels[i] }} <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">{{ item }}</span>
                 </button>
             </div>
         </div>
     </div>
-</div>
 
+        <div class="row my-5" *ngIf="this.datosAProcesar.length != 0">
+        <h3>Listado de Copys</h3>
+        <div class="col-md-12">
+            <p *ngFor="let copy of datosAProcesar" class="m-2 lh-lg">
+                {{copy.acf.sendDate}} ({{copy.acf.media}} / {{copy.acf.program}}): <b>{{copy.acf.iaResume}}</b> 
+                <a href="{{copy.acf.link}}" target="_blank">
+                    <span class="badge rounded-pill bg-primary m-2">Ver Nota</span>
+                </a>
+            </p>
+            
+        </div>
+    </div>
+
+</div>

@@ -27,22 +27,28 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
   barMedios;
   barProgramas;
   barTopics;
+  medios=[];
   noticiasCategoria=[];
   noticiasMedio=[];
   estadisticasList;
   categoria:string='TOTALES';
   medio:string='TODOS';
-
+  desde;
+  hasta;
+  datosAProcesar;
   private subscriptions = new Subscription();
 
   constructor(public DS: DataService, private sharedService:SharedService,  private activatedRoute: ActivatedRoute) {}
 
   ngOnInit() {
     this.DS.setLoading();
+    this.desde = this.DS.getDesde();
+    this.hasta = this.DS.getHasta();
     const newsSub = this.sharedService.leerNoticias().subscribe({
       next: (ns) => {
         this.DS.setSaved(ns);
         this.datos = ns;
+
         // Subscribe to route parameter changes here, after data is loaded
         const paramsSub = this.activatedRoute.paramMap.subscribe((params: ParamMap) => {
           this.categoria = params.get('cat') || 'TOTALES';
@@ -56,6 +62,22 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
         });
         this.subscriptions.add(paramsSub); // Add to subscriptions for cleanup
         this.DS.setLoaded();
+        this.medios = this.DS.getMediosXLS();
+        
+        //reemplazar nombres de medios y programas
+        this.datos.forEach(element => {
+          const mediaObj = this.medios.find(
+        (m) => m.sigla.toLowerCase() === element.acf.media.toLowerCase()
+      );
+      element.acf.media = mediaObj ? mediaObj.nombre : element.acf.media;
+      const programObj = this.medios.find(
+        (p) => p.sigla.toLowerCase() === element.acf.program.toLowerCase()
+      );
+      element.acf.program = programObj ? programObj.nombre : element.acf.program;
+
+
+        });
+        console.log(this.datos);
       },
       error: (error) => {
         console.error("Error al leer noticias:", error);
@@ -63,6 +85,7 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
       }
     });
     this.subscriptions.add(newsSub);
+    
   }
 
   ngOnDestroy() {
@@ -75,23 +98,46 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
     let medios: { [clave: string]: number } = {};
     let programas: { [clave: string]: number } = {};
     let agrupadores: { [clave: string]: number } = {};
+    let desde = this.DS.getDesde();
+    let hasta = this.DS.getHasta();
+    let datosFiltrados = this.datos;
 
-    let datosAProcesar = this.datos;
+    if(desde && hasta){
+      const fromDate = `${desde['year'].toString().slice(-2)}${desde['month'].toString().padStart(2, '0')}${desde['day'].toString().padStart(2, '0')}`;
+      const toDate = `${hasta['year'].toString().slice(-2)}${hasta['month'].toString().padStart(2, '0')}${hasta['day'].toString().padStart(2, '0')}`;
+
+       datosFiltrados = this.datos.filter((n) => {
+        if (!n.acf.sendDate) {
+          return false;
+        }
+        const fechatmp = n.acf.sendDate.split('/').reverse();
+
+        const fecha = `${fechatmp[0].toString().slice(-2)}${fechatmp[1].toString().padStart(2, '0')}${fechatmp[2].toString().padStart(2, '0')}`;
+
+        if (fecha >= fromDate && fecha <= toDate) {
+          return n
+        }
+      });
+    }
+     this.datosAProcesar = datosFiltrados;
+
+    
+    
 
     if(tipo == 'categoria'){
 
       // If a category is present, filter the data
-      if (categoria && this.datos && categoria !== 'TOTALES') {
-        this.noticiasCategoria = this.datos.filter((n) => n.acf.topic.includes(categoria));
-        datosAProcesar = this.noticiasCategoria;
+      if (categoria && this.datosAProcesar && categoria !== 'TOTALES') {
+        this.noticiasCategoria = this.datosAProcesar.filter((n) => n.acf.topic.includes(categoria));
+        this.datosAProcesar = this.noticiasCategoria;
       }
   
-      if (!datosAProcesar) {
+      if (!this.datosAProcesar) {
         return; // No data to process
       }
   
       // Perform counts
-      datosAProcesar.forEach(e => {
+      this.datosAProcesar.forEach(e => {
         if (e.acf.media)   medios[e.acf.media] = (medios[e.acf.media] || 0) + 1;
         if (e.acf.program) programas[e.acf.program] = (programas[e.acf.program] || 0) + 1;
         if (e.acf.topic) {
@@ -101,15 +147,15 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
         }
       });
     }else{
-      if (this.medio && this.datos && this.medio  !== 'TODOS') {
-        this.noticiasMedio = this.datos.filter((n) => n.acf.media.includes(this.medio));
-        datosAProcesar = this.noticiasMedio;
+      if (this.medio && this.datosAProcesar && this.medio  !== 'TODOS') {
+        this.noticiasMedio = this.datosAProcesar.filter((n) => n.acf.media.includes(this.medio));
+        this.datosAProcesar = this.noticiasMedio;
       }
   
-      if (!datosAProcesar) {
+      if (!this.datosAProcesar) {
         return; // No data to process
       }
-      datosAProcesar.forEach(e => {
+      this.datosAProcesar.forEach(e => {
         if (e.acf.media)   medios[e.acf.media] = (medios[e.acf.media] || 0) + 1;
         if (e.acf.program) programas[e.acf.program] = (programas[e.acf.program] || 0) + 1;
         if (e.acf.topic) {
@@ -138,6 +184,10 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
   }
 
   updateChartData() {
+    this.barMedios= undefined;
+    this.barProgramas= undefined;
+    this.barTopics= undefined;
+
   this.barMedios = {
     labels: this.conteoMedios.map(item => item.medio),
     datasets: [
@@ -171,4 +221,16 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
     ]
   };
 }
+
+Consultar(){
+  this.DS.setDesde(this.desde);
+  this.DS.setHasta(this.hasta);
+  if(this.activatedRoute.snapshot.url[1]?.path == 'm'){
+    this.procesarEstadisticas(this.medio,'medio');
+  }else{
+    this.procesarEstadisticas(this.categoria, 'categoria');
+  }
+}
+
+
 }

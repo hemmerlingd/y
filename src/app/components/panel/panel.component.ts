@@ -18,7 +18,8 @@ export class PanelComponent {
   palabrasClaveOriginal: Array<{ palabra: string; padre: string }> = [];
   text: string = '';
   noticiasGuardadas;
-
+  editingIndex: number | null = null;
+  
   constructor(
     private activatedRoute: ActivatedRoute,
     private router: Router,

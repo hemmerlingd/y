@@ -3,12 +3,12 @@ import { CommonModule } from '@angular/common';
 import { DomSanitizer } from '@angular/platform-browser';
 import { SharedService } from '../../services/shared.service';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { DataService } from 'src/app/shared/data.service';
 
 // Interfaz para definir la estructura de cada noticia
 export interface NewsItem {
-  id_:string;
+  id_: string;
   sendDate: string;
   sendTime: string;
   media: string;
@@ -21,20 +21,18 @@ export interface NewsItem {
   endTime: string;
   topic: string[];
   destacada?: boolean;
-  copy:boolean;
+  copy: boolean;
 }
-
 
 @Component({
   selector: 'app-importar',
   templateUrl: './importar.component.html',
-  styleUrls: ['./importar.component.scss']
+  styleUrls: ['./importar.component.scss'],
 })
-
 export class ImportarComponent {
- title = 'ctrlMedios';
+  title = 'ctrlMedios';
   sharedService = inject(SharedService);
-  dataService = inject(DataService)
+  dataService = inject(DataService);
   newsItems: NewsItem[] = [];
   errorMessage: string = '';
   toast: boolean = false;
@@ -42,22 +40,18 @@ export class ImportarComponent {
   mediosYProgramas: Array<{ sigla: string; nombre: string }> = [];
   categorias: string[] = [];
   IAtext: any;
-  newAgrupadas: Array<{padre: string; noticia:NewsItem[]}> =[];
+  newAgrupadas: Array<{ padre: string; noticia: NewsItem[] }> = [];
   newsItemsFiltradas: NewsItem[] = [];
-  arrayPalabras:[]=[];
-  newsAPI:NewsItem[]=[];
+  arrayPalabras: [] = [];
+  editingIndex: number | null = null;
 
   constructor(private sanitizer: DomSanitizer) {}
   async ngOnInit() {
-   this.sharedService.leerNoticias().subscribe((ns)=>{
-     this.dataService.setSaved(ns);
-     
-    
-   })
+    this.sharedService.leerNoticias().subscribe((ns) => {
+      this.dataService.setSaved(ns);
+    });
 
-
-
-      this.newsItems = this.dataService.getNews();
+    this.newsItems = this.dataService.getNews();
 
     (await this.sharedService.getPalabrasClave()).subscribe((data: any) => {
       const jsonData = JSON.parse(data.substring(47).slice(0, -2));
@@ -71,10 +65,8 @@ export class ImportarComponent {
           };
         });
       this.mediosYProgramas.splice(0, 1);
-      this.dataService.setMediosXLS(this.mediosYProgramas)
-      console.log(this.dataService.getMediosXLS());
-      
-     
+      this.dataService.setMediosXLS(this.mediosYProgramas);
+
       this.palabrasClaveOriginal = jsonData.table.rows.map((row: any) => {
         return {
           palabra: row.c[0].v,
@@ -82,11 +74,9 @@ export class ImportarComponent {
         };
       });
       this.palabrasClaveOriginal.splice(0, 1);
-     this.dataService.setPalabras(this.palabrasClaveOriginal)
+      this.dataService.setPalabras(this.palabrasClaveOriginal);
 
-            
-
-     this.categorias = Array.from(
+      this.categorias = Array.from(
         new Set(
           this.palabrasClaveOriginal.flatMap((item) =>
             item.padre
@@ -99,8 +89,6 @@ export class ImportarComponent {
       this.dataService.setCategorias(this.categorias);
     });
 
-    
-      
     try {
     } catch (error) {
       console.error('Error al leer el archivo:', error);
@@ -143,10 +131,10 @@ export class ImportarComponent {
     const messages = content.split(
       /\n(?=\[\d{1,2}\/\d{1,2}\/\d{2,4}, \d{1,2}:\d{2}:\d{2}.*?\])/
     );
-        
-        this.categorias.forEach((p)=>{
-        this.newAgrupadas.push({padre: p, noticia:[]})
-      })
+
+    this.categorias.forEach((p) => {
+      this.newAgrupadas.push({ padre: p, noticia: [] });
+    });
     for (const message of messages) {
       if (!message.trim()) continue;
 
@@ -161,9 +149,13 @@ export class ImportarComponent {
 
       const splitDate = sendDate.split('/');
       const splitTime = sendTime.split(':');
-      const id_ = splitDate[0] + splitDate[1] + splitDate[2] + splitTime[0] + splitTime[1] + splitTime[2];
-
-      
+      const id_ =
+        splitDate[0] +
+        splitDate[1] +
+        splitDate[2] +
+        splitTime[0] +
+        splitTime[1] +
+        splitTime[2];
 
       let messageBody = message
         .substring(dateTimeMatch[0].length)
@@ -178,7 +170,7 @@ export class ImportarComponent {
           'Los mensajes y las llamadas están cifrados de extremo a extremo'
         ) ||
         messageBody.includes('creó este grupo') ||
-        messageBody.includes('Hugo Tejeda te añadió.')  
+        messageBody.includes('Hugo Tejeda te añadió.')
       ) {
         continue;
       }
@@ -190,7 +182,7 @@ export class ImportarComponent {
       ) {
         continue;
       }
-      messageBody .replace('imagen omitida', '').trim();
+      messageBody.replace('imagen omitida', '').trim();
       messageBody = messageBody.replace('‼️', '').trim();
 
       // 6. Extraer Link
@@ -216,10 +208,10 @@ export class ImportarComponent {
         .replace(mediaProgramRegex, '')
         .trim();
 
-          const jsonString = JSON.stringify(textLimpio);
+      const jsonString = JSON.stringify(textLimpio);
       // this.sharedService.generarResumen(jsonString).subscribe((ia)=>{
       // console.log(ia);
-        
+
       // })
 
       let resume: string | undefined = undefined;
@@ -230,20 +222,19 @@ export class ImportarComponent {
         const transcriptionText = parts[1].trim();
         text = mainText;
         resume = transcriptionText;
-      }else{
-         text = textLimpio;
+      } else {
+        text = textLimpio;
         resume = '';
       }
       let destacada = false;
 
-              
       const topic = this.determineTopic(text);
-       if (topic.includes('Destacadas')) {
-          destacada= true;
-        }else{
-          destacada= false;
-        }
-      const nota:NewsItem = {
+      if (topic.includes('Destacadas')) {
+        destacada = true;
+      } else {
+        destacada = false;
+      }
+      const nota: NewsItem = {
         id_,
         sendDate,
         sendTime,
@@ -256,68 +247,69 @@ export class ImportarComponent {
         startTime,
         endTime,
         topic,
-        destacada ,
-        copy: false 
-      }
+        destacada,
+        copy: false,
+      };
       this.newsItems.push(nota);
-    
-      this.agruparNoticias(nota);
 
+      this.agruparNoticias(nota);
     }
-    this.newAgrupadas.push({padre: 'TODAS', noticia:this.newsItems})
-    this.newsItemsFiltradas =  this.newsItems;
+    this.newAgrupadas.push({ padre: 'TODAS', noticia: this.newsItems });
+    this.newsItemsFiltradas = this.newsItems;
     this.dataService.setNews(this.newsItems);
-    
+
     this.dataService.setAgrupadas(this.newAgrupadas);
     this.dataService.setLoaded();
   }
 
-guardarJson(){
-  const jsonString = JSON.stringify(this.newsItems[0]);
-  console.log(jsonString);
-  this.sharedService.guardarNoticias(this.newsItems[0]);
-}
+  guardarJson() {
+    const jsonString = JSON.stringify(this.newsItems[0]);
+    console.log(jsonString);
+    this.sharedService.guardarNoticias(this.newsItems[0]);
+  }
 
-agruparNoticias(nota){
-      this.newAgrupadas.map((n)=>{
-        nota.topic.forEach((t)=>{
-          if(n.padre == t && n.noticia.filter((e)=>e.id_ == nota.id_).length == 0){
-            n.noticia.push(nota)
-          }
-        })
-      })     
-}
-desagruparNoticias(nota,categoria) {
-  this.newAgrupadas.forEach((n) => {
-  if(n.padre === categoria){
-         const index = n.noticia.findIndex((e) => e.id_ === nota.id_);
+  agruparNoticias(nota) {
+    this.newAgrupadas.map((n) => {
+      nota.topic.forEach((t) => {
+        if (
+          n.padre == t &&
+          n.noticia.filter((e) => e.id_ == nota.id_).length == 0
+        ) {
+          n.noticia.push(nota);
+        }
+      });
+    });
+  }
+  desagruparNoticias(nota, categoria) {
+    this.newAgrupadas.forEach((n) => {
+      if (n.padre === categoria) {
+        const index = n.noticia.findIndex((e) => e.id_ === nota.id_);
         if (index !== -1) {
           n.noticia.splice(index, 1); // Elimina el elemento del array
         }
+      }
+    });
   }
-  });
-}
-
 
   // Lógica para extraer Medio y Programa
-  private extractMediaAndProgram(
-    body: string
-  ): { media: string; program: string } {
+  private extractMediaAndProgram(body: string): {
+    media: string;
+    program: string;
+  } {
     const puntoRegex = /^(.+?)\.(.+?)\./;
     const puntoMatch = body.match(puntoRegex);
     let mediaSigla;
     let programSigla;
     if (puntoMatch && !puntoMatch[1].includes('http')) {
-      
       if (puntoMatch[1].length >= 20) {
-        puntoMatch[1].split(' ')[0]
-        mediaSigla = puntoMatch[1].split(' ')[0]; 
-        programSigla = puntoMatch[1].split(' ')[1]; 
-      }else{
+        puntoMatch[1].split(' ')[0];
+        mediaSigla = puntoMatch[1].split(' ')[0];
+        programSigla = puntoMatch[1].split(' ')[1];
+      } else {
         mediaSigla = puntoMatch[1].trim();
         programSigla = puntoMatch[2].trim();
       }
-      
+
       const mediaObj = this.mediosYProgramas.find(
         (m) => m.sigla.toLowerCase() === mediaSigla.toLowerCase()
       );
@@ -328,18 +320,20 @@ desagruparNoticias(nota,categoria) {
         media: mediaObj ? mediaObj.nombre : mediaSigla,
         program: programObj ? programObj.nombre : programSigla,
       };
-    } 
-      if (body.includes('https://') ) {
-        let url = body.split('//')[1];
-        url = url.replace('www.', '');
-        return {
-          media: url.split('.')[0],
-          program: 'web',
-        };
-      }
+    }
+    if (body.includes('https://')) {
+      let url = body.split('//')[1];
+      url = url.replace('www.', '');
+      const mediaObj = this.mediosYProgramas.find(
+        (m) => m.sigla.toLowerCase() === url.split('.')[0].toLowerCase()
+      );
 
+      return {
+        media: mediaObj ? mediaObj.nombre : url.split('.')[0],
+        program: 'web',
+      };
+    }
 
-    
     // Método 2: Buscar siglas al inicio del mensaje
     const mediaProgramRegex = /^([A-ZÁÉÍÓÚÑÜ]{1,3})\s([A-ZÁÉÍÓÚÑÜ]{1,3})\b/;
 
@@ -360,10 +354,9 @@ desagruparNoticias(nota,categoria) {
     return { media: '*', program: '*' };
   }
 
-
   private determineTopic(text: string) {
     const lowerCaseText = text.toLowerCase();
-    
+
     const topics: { [key: string]: string[] } = {};
     this.palabrasClaveOriginal.forEach(({ palabra, padre }) => {
       // Separar múltiples padres por ';'
@@ -388,7 +381,6 @@ desagruparNoticias(nota,categoria) {
           break; // Solo una coincidencia por temática es suficiente
         }
       }
-
     }
 
     return foundTopics.length > 0 ? foundTopics : ['General'];
@@ -445,64 +437,72 @@ desagruparNoticias(nota,categoria) {
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
-resaltarTexto(texto: string, i: any) {
-  const palabrasClaveOriginal = this.palabrasClaveOriginal;
-  const normalizar = (str: string) =>
-    str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  resaltarTexto(texto: string, i: any) {
+    const palabrasClaveOriginal = this.palabrasClaveOriginal;
+    const normalizar = (str: string) =>
+      str
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
 
-  let textoResaltado = texto;
+    let textoResaltado = texto;
 
-  palabrasClaveOriginal.forEach(({ palabra }) => {
-    const regexStr = palabra
-      .split('')
-      .map((letra: string) => {
-        const base = letra.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-        const vocales: { [key: string]: string } = {
-          a: 'á',
-          e: 'é',
-          i: 'í',
-          o: 'ó',
-          u: 'ú',
-        };
-        const acento = vocales[base] || '';
-        const variantes = [base, acento, letra].filter(Boolean).join('');
-        return `[${variantes}]`;
-      })
-      .join('');
+    palabrasClaveOriginal.forEach(({ palabra }) => {
+      const regexStr = palabra
+        .split('')
+        .map((letra: string) => {
+          const base = letra
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase();
+          const vocales: { [key: string]: string } = {
+            a: 'á',
+            e: 'é',
+            i: 'í',
+            o: 'ó',
+            u: 'ú',
+          };
+          const acento = vocales[base] || '';
+          const variantes = [base, acento, letra].filter(Boolean).join('');
+          return `[${variantes}]`;
+        })
+        .join('');
 
-    // Simula límites de palabra incluyendo letras acentuadas
-    const regex = new RegExp(
-      `(^|[^\\wáéíóúÁÉÍÓÚ])(\\b${regexStr}\\b)(?=[^\\wáéíóúÁÉÍÓÚ]|$)`,
-      'gi'
-    );
+      // Simula límites de palabra incluyendo letras acentuadas
+      const regex = new RegExp(
+        `(^|[^\\wáéíóúÁÉÍÓÚ])(\\b${regexStr}\\b)(?=[^\\wáéíóúÁÉÍÓÚ]|$)`,
+        'gi'
+      );
 
-     let cantidad = 0;
-    textoResaltado = textoResaltado.replace(regex, (match, pre, palabraCoincidente) => {
-      return `${pre}<span class="resaltado">${palabraCoincidente}</span>`;
+      let cantidad = 0;
+      textoResaltado = textoResaltado.replace(
+        regex,
+        (match, pre, palabraCoincidente) => {
+          return `${pre}<span class="resaltado">${palabraCoincidente}</span>`;
+        }
+      );
     });
-
-  });
-  return  textoResaltado;
-
-
-}
-
-
+    return textoResaltado;
+  }
 
   copy(text: any) {
     const texto =
-          '->** \n' +
-          '-> '+text.media+' / '+text.program+'\n' +
-          '🔗 ->' + text.link.trim()
+      '->** \n' +
+      '-> ' +
+      text.media +
+      ' / ' +
+      text.program +
+      '\n' +
+      '🔗 ->' +
+      text.link.trim();
 
-
-      // '📺 | 📻 -> *Medio:* ' +
-      // text.media +
-      // '*\n 🎤 -> *Programa:* ' +
-      // text.program +
-      // '*\n🔗 -> Link:' +
-      // text.link.trim() +
-      // '*\n 🗣 -> Resumen:';
+    // '📺 | 📻 -> *Medio:* ' +
+    // text.media +
+    // '*\n 🎤 -> *Programa:* ' +
+    // text.program +
+    // '*\n🔗 -> Link:' +
+    // text.link.trim() +
+    // '*\n 🗣 -> Resumen:';
 
     navigator.clipboard
       .writeText(texto)
@@ -522,49 +522,46 @@ resaltarTexto(texto: string, i: any) {
       }, 2000);
     }
   }
-// mejorarResumen(item) {
-//       item.iaResume= null;
-//       this.resumenIA(item.resume).then(resultado => {
-//        item.iaResume = resultado;
-//       });
-// }
-// async resumenIA(text: any){
+  // mejorarResumen(item) {
+  //       item.iaResume= null;
+  //       this.resumenIA(item.resume).then(resultado => {
+  //        item.iaResume = resultado;
+  //       });
+  // }
+  // async resumenIA(text: any){
 
-// // 🔐 Tu API Key de Google AI Studio
-// const API_KEY = "AIzaSyAtocqMrT3gzgpKmqfnkYE9aSsg3F077Kc";
-// // console.log("api key");
-// // 🧠 Inicializar el cliente
-// const genAI = new GoogleGenerativeAI(API_KEY);
-// // console.log("inicializado");
+  // // 🔐 Tu API Key de Google AI Studio
+  // const API_KEY = "AIzaSyAtocqMrT3gzgpKmqfnkYE9aSsg3F077Kc";
+  // // console.log("api key");
+  // // 🧠 Inicializar el cliente
+  // const genAI = new GoogleGenerativeAI(API_KEY);
+  // // console.log("inicializado");
 
+  // // 🧾 Prompt personalizado
+  // const prompt = `
+  // Por favor, actúa como un experto en resúmenes de texto.
+  // Tarea: Quiero que resumas el siguiente texto.
+  // Requisitos del resumen:
+  // - Longitud: breve (17 palabras)
+  // - Estilo: claro y conciso
+  // - Enfoque: destacar el tema principal
+  // - Respuesta en forma de titulo
+  // - Evitar detalles innecesarios
+  // - no agregar mas que el resumen, no hagas comentarios ni explicaciones adicionales
+  // - ultiliza solo como contexto la Municipalidad de Córdoba y este array de palabras clave: ${this.palabrasClaveOriginal.map(p => p.palabra + " - " + p.padre).join(', ')}
+  // Texto: ${text}
+  // `;
+  // try {
+  //     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-// // 🧾 Prompt personalizado
-// const prompt = `
-// Por favor, actúa como un experto en resúmenes de texto.
-// Tarea: Quiero que resumas el siguiente texto.
-// Requisitos del resumen:
-// - Longitud: breve (17 palabras)
-// - Estilo: claro y conciso
-// - Enfoque: destacar el tema principal
-// - Respuesta en forma de titulo
-// - Evitar detalles innecesarios
-// - no agregar mas que el resumen, no hagas comentarios ni explicaciones adicionales
-// - ultiliza solo como contexto la Municipalidad de Córdoba y este array de palabras clave: ${this.palabrasClaveOriginal.map(p => p.palabra + " - " + p.padre).join(', ')}
-// Texto: ${text}
-// `;
-// try {
-//     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
-//     const result = await model.generateContent(prompt);
-//     const response = await result.response;
-//     const resumen = response.text();
-//     // console.log("📌 Resumen generado:");
-//     // console.log(resumen);
-//     return resumen;
-//   } catch (error) {
-//     return "❌ Error al generar el resumen:" + error;
-//   }
-// }
-
-
+  //     const result = await model.generateContent(prompt);
+  //     const response = await result.response;
+  //     const resumen = response.text();
+  //     // console.log("📌 Resumen generado:");
+  //     // console.log(resumen);
+  //     return resumen;
+  //   } catch (error) {
+  //     return "❌ Error al generar el resumen:" + error;
+  //   }
+  // }
 }

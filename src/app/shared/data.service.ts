@@ -14,16 +14,46 @@ export class DataService{
   loading: boolean = false;
   estadisticasList:any[]=[];
   mediosList:any[]=[];
+  statsDesde:any='';
+  statsHasta:any='';
 
 
    constructor(private sharedService:SharedService) { 
+        const hoy = new Date();
+    const fechaDesde = new Date(hoy.setDate(hoy.getDate() - 30));
+    const fechaHasta = new Date(hoy.setDate(hoy.getDate() + 30));
+
+    this.statsDesde = {
+      year: fechaDesde.getFullYear(),
+      month: fechaDesde.getMonth() + 1, 
+      day: fechaDesde.getDate()
+    };
     
+    this.statsHasta = {
+      year: fechaHasta.getFullYear(),
+      month: fechaHasta.getMonth() + 1, 
+      day: fechaHasta.getDate()
+    };
+
   }
   setLoading(){
     this.loading = true;
   }
   setLoaded(){
     this.loading = false;
+  }
+
+    setDesde(data){
+    this.statsDesde = data;
+  }
+  getDesde(){
+   return this.statsDesde;
+  }
+  setHasta(data){
+    this.statsHasta = data;
+  }
+  getHasta(){
+   return this.statsHasta;
   }
   setNews(data){
     this.newsItems = data;

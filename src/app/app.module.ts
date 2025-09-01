@@ -31,7 +31,7 @@ import { LoaderComponent } from './components/shared/loader/loader.component';
     FormsModule,
     NgbDropdownModule,
     NgbRatingModule,
-    NgChartsModule
+    NgChartsModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
