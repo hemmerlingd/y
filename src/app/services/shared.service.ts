@@ -35,9 +35,12 @@ export class SharedService {
     const appPassword = 'BKIY FRDk izuM Rhrt LhW5 3ACe'; // sin espacios si lo pegás
     const credentials = btoa(`${username}:${appPassword}`);
     const titulo = data.iaResume;
+    console.log(data);
+    
     fetch('https://pruebas01.dev.cordoba.gob.ar/wp-json/wp/v2/noticia', {
       method: 'POST',
       headers: {
+        'Content-Type': 'application/json',
         Authorization: `Basic ${credentials}`,
       },
       body: JSON.stringify({
@@ -45,7 +48,7 @@ export class SharedService {
         content: 'Contenido enriquecido',
         status: 'publish',
         acf: {
-          ...data,
+         ...data,
         },
       }),
     })

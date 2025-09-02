@@ -170,20 +170,29 @@ desagruparNoticias(nota: any, categoria: string) {
       });
   }
 copyAll(items) {
-let TODOS='------------\n'+' RESUMEN DE '+ this.categoria.toUpperCase() + '\n------------\n\n';
+let TODOS='\n'+'📍 RESUMEN DE '+ this.categoria.toUpperCase() + '\n\n';
   items.forEach((t)=>{
     if(t.iaResume){
-      //TODO -> ver si existe y modificar en vez de crear.
-      console.log(this.noticiasGuardadas);
-      this.noticiasGuardadas.forEach((n)=>{
-        if(n.acf.id_ === t.id_){
-          console.log('ES IGUAL',n,t);          
-          //this.sharedService.ActualizarNoticias(t);
-        }else{
-          return
+      const topics = t.topic.join(';');
+      t.topics = topics;
+  
+      const noticiaExistente = this.noticiasGuardadas.find((n) => {
+               return n.acf.id_ === t.id_;
         }
-      })
-      // this.sharedService.guardarNoticias(t);
+         
+      );
+    
+      
+      if (noticiaExistente) {
+        // Si existe, se actualiza.
+        const dataToUpdate = { ...t, id: noticiaExistente.id };
+        console.log(dataToUpdate);
+        
+        this.sharedService.ActualizarNoticias(dataToUpdate);
+      } else {
+        // Si no existe, se guarda como nueva.
+        this.sharedService.guardarNoticias(t);
+      }
       const cop =
         '->*' +
         t.iaResume +
@@ -195,7 +204,7 @@ let TODOS='------------\n'+' RESUMEN DE '+ this.categoria.toUpperCase() + '\n---
         '\n' +
         '🔗 ->' +
         t.link.trim()+
-        '\n\n ------------\n\n';  
+        '\n\n \n';  
         TODOS+=cop;
     }
   })

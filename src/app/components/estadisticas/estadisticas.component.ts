@@ -88,6 +88,10 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
     
   }
 
+  exportarCSV() {
+  
+  }
+
   ngOnDestroy() {
     this.subscriptions.unsubscribe(); // Clean up subscriptions to prevent memory leaks
   }

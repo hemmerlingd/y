@@ -20,6 +20,7 @@ export interface NewsItem {
   startTime: string;
   endTime: string;
   topic: string[];
+  topics: string;
   destacada?: boolean;
   copy: boolean;
 }
@@ -234,6 +235,7 @@ export class ImportarComponent {
       } else {
         destacada = false;
       }
+      const topics = '';
       const nota: NewsItem = {
         id_,
         sendDate,
@@ -247,11 +249,11 @@ export class ImportarComponent {
         startTime,
         endTime,
         topic,
+        topics,
         destacada,
         copy: false,
       };
       this.newsItems.push(nota);
-
       this.agruparNoticias(nota);
     }
     this.newAgrupadas.push({ padre: 'TODAS', noticia: this.newsItems });

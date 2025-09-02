@@ -11,7 +11,7 @@
             <div class="input-group">
                 <input class="form-control" placeholder="Seleccione Fecha" name="dpDesde" [(ngModel)]="desde" ngbDatepicker #dDesde="ngbDatepicker" (click)="dDesde.toggle()">
                 <button class="btn btn-outline-dark calendar" (click)="dDesde.toggle()" type="button">
-                    <i class="fa-solid fa-calendar"></i>
+                    📅
                 </button>
             </div>
     </div>
@@ -20,12 +20,13 @@
             <div class="input-group">
                 <input class="form-control" placeholder="Seleccione Fecha" name="dpHasta" [(ngModel)]="hasta" ngbDatepicker #dHasta="ngbDatepicker" (click)="dHasta.toggle()" >
                 <button class="btn btn-outline-dark calendar" (click)="dHasta.toggle()" type="button">
-                    <i class="fa-solid fa-calendar"></i>
+                    📅
                 </button>
             </div>
     </div>
     <div class="col-auto">
            <button class="btn btn-dark" (click)="Consultar()">Consultar</button>
+           <button class="btn btn-dark ms-1" (click)="exportarCSV()">Exportar CSV</button>
     </div>
 
   </div>
