@@ -26,7 +26,8 @@
     </div>
     <div class="col-auto">
            <button class="btn btn-dark" (click)="Consultar()">Consultar</button>
-           <button class="btn btn-dark ms-1" (click)="exportarCSV()">Exportar CSV</button>
+           <button class="btn btn-dark ms-1" (click)="exportarCSV()" [disabled]="datosAProcesar.length == 0">Exportar CSV</button>
+           <button class="btn btn-dark ms-1" (click)="imprimirPDF()" [disabled]="datosAProcesar.length == 0">Imprimir</button>
     </div>
 
   </div>

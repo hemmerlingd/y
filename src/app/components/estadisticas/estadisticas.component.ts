@@ -14,7 +14,7 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
   datos: any;
   conteoMedios:{ medio: string; cantidad: number; }[]=[];
   conteoProgramas:{ programa: string; cantidad: number; }[]=[];
-  conteoTopics:{ topic: string; cantidad: number; }[]=[];
+  conteoTopics:{ topics: string; cantidad: number; }[]=[];
   barChartType: ChartType = 'bar';
   pieChartType: ChartType = 'pie';
   ChartOptions: ChartOptions = {
@@ -87,9 +87,39 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
     this.subscriptions.add(newsSub);
     
   }
+imprimirPDF() {
 
+  window.print();
+
+}
   exportarCSV() {
-  
+  const headers = [
+      'sendDate',
+      'sendTime',
+      'media',
+      'program',
+      'iaResume',
+      'link',
+      'topics',
+    ];
+    
+    const csv = [
+      headers.join(';'),
+      ...this.datosAProcesar.map(row => headers.map(header => row.acf[header]).join(';'))
+    ].join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'estadisticas.csv');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
   }
 
   ngOnDestroy() {
@@ -132,7 +162,7 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
 
       // If a category is present, filter the data
       if (categoria && this.datosAProcesar && categoria !== 'TOTALES') {
-        this.noticiasCategoria = this.datosAProcesar.filter((n) => n.acf.topic.includes(categoria));
+        this.noticiasCategoria = this.datosAProcesar.filter((n) => n.acf.topics.includes(categoria));
         this.datosAProcesar = this.noticiasCategoria;
       }
   
@@ -180,7 +210,7 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
         .sort((a, b) => b.cantidad - a.cantidad);
   
       /******TOPICS********/
-      this.conteoTopics = Object.entries(agrupadores).map(([topic, cantidad]) => ({ topic, cantidad }))
+      this.conteoTopics = Object.entries(agrupadores).map(([topics, cantidad]) => ({ topics, cantidad }))
         .sort((a, b) => b.cantidad - a.cantidad);
   
       // Update chart data
@@ -215,7 +245,7 @@ export class EstadisticasComponent implements OnInit, OnDestroy {
   };
 
    this.barTopics = {
-    labels: this.conteoTopics.map(item => item.topic),
+    labels: this.conteoTopics.map(item => item.topics),
     datasets: [
       {
         label: 'Cantidad',
